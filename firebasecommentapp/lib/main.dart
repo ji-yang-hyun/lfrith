@@ -5,6 +5,7 @@ import 'package:firebasecommentapp/screens/intro_screen.dart';
 import 'package:firebasecommentapp/screens/login_screen.dart';
 import 'package:firebasecommentapp/screens/music_add_screen.dart';
 import 'package:firebasecommentapp/screens/music_player_test_screen.dart';
+import 'package:firebasecommentapp/screens/search_test_screen.dart';
 import 'package:firebasecommentapp/screens/signin_screen.dart';
 import 'package:firebasecommentapp/screens/translate_test_screen.dart';
 import 'package:firebasecommentapp/screens/user_screen.dart';
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: IntroScreen(),
+      home: SearchTestScreen(),
     );
   }
 }

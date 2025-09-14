@@ -50,7 +50,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (keyword.isEmpty) {
         songsToShow.add(i);
       } else {
-        if (songsInfo[i]["search_tag"].contains(keyword)) {
+        if (songsInfo[i]["title"].contains(keyword)) {
           songsToShow.add(i);
         }
       }
