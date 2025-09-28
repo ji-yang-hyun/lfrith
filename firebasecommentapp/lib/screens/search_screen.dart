@@ -3,6 +3,7 @@ import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/home_screen.dart';
 import 'package:firebasecommentapp/screens/music_add_screen.dart';
 import 'package:firebasecommentapp/screens/song_screen.dart';
+import 'package:firebasecommentapp/search_engine.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:firebasecommentapp/widgets/mini_music_widget.dart';
 import 'package:flutter/material.dart';
@@ -39,22 +40,14 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {});
   }
 
-  void searchFunc() {
-    songsToShow = []; // 보여줄 노래 리스트 초기화
-    String? keyword = strController.text
-        .toLowerCase()
-        .replaceAll(" ", "")
-        .replaceAll("\n", "");
-
-    for (int i = 1; i < songsInfo.length; i++) {
-      if (keyword.isEmpty) {
-        songsToShow.add(i);
-      } else {
-        if (songsInfo[i]["title"].contains(keyword)) {
-          songsToShow.add(i);
-        }
-      }
+  void searchFunc() async {
+    if (strController.text.isEmpty) {
+      return;
     }
+    songsToShow = []; // 보여줄 노래 리스트 초기화
+
+    songsToShow = await searchEngine(strController.text);
+    print(songsToShow);
 
     setState(() {});
   }

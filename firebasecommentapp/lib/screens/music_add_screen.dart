@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/home_screen.dart';
 import 'package:firebasecommentapp/screens/song_screen.dart';
+import 'package:firebasecommentapp/search_engine.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:firebasecommentapp/widgets/song_check_widget.dart';
 import 'package:flutter/material.dart';
@@ -63,15 +64,11 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
     artist = video.author;
     views = video.engagement.viewCount;
     likes = video.engagement.likeCount ?? 0;
-    description = video.description;
-
-    print(video.keywords.toList());
-    print("\n");
-
-    String searchTag = (artist + title + description)
-        .toLowerCase()
-        .replaceAll(" ", "")
-        .replaceAll("\n", "");
+    List<String> keywords = module1(title, artist);
+    List<List<String>> searchTag = await module2(keywords);
+    List<String> searchTag0 = searchTag[0];
+    List<String> searchTag1 = searchTag[1];
+    List<String> searchTag2 = searchTag[2];
 
     newSong = {
       "albumcover": albumCoverImgUrl,
@@ -79,12 +76,15 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       "comment_numbers": [],
       "likes": likes,
       "report_count": 0,
-      "search_tag": searchTag,
+      "search_tag0": searchTag0,
+      "search_tag1": searchTag1,
+      "search_tag2": searchTag2,
       "title": title,
       "views": views,
       "youtube_url": musicUrl,
       "rating": rating,
       "number": 0,
+      "keywords": keywords,
     };
 
     showSongState = true;

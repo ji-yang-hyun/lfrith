@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/screens/login_screen.dart';
+import 'package:firebasecommentapp/search_engine.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,12 +42,11 @@ class _AdminScreenState extends State<AdminScreen> {
       String artist = video.author;
       int views = video.engagement.viewCount;
       int likes = video.engagement.likeCount ?? 0;
-
-      String description = video.description;
-      String searchTag = (artist + title + description)
-          .toLowerCase()
-          .replaceAll(" ", "")
-          .replaceAll("\n", "");
+      List<String> keywords = module1(title, artist);
+      List<List<String>> searchTag = await module2(keywords);
+      List<String> searchTag0 = searchTag[0];
+      List<String> searchTag1 = searchTag[1];
+      List<String> searchTag2 = searchTag[2];
 
       var newSongInfo = {
         "albumcover": albumCoverImgUrl,
@@ -54,12 +54,15 @@ class _AdminScreenState extends State<AdminScreen> {
         "comment_numbers": songInfo["comment_numbers"],
         "likes": likes,
         "report_count": songInfo["report_count"],
-        "search_tag": searchTag,
+        "search_tag0": searchTag0,
+        "search_tag1": searchTag1,
+        "search_tag2": searchTag2,
         "title": title,
         "views": views,
         "youtube_url": url,
         "rating": songInfo["rating"],
         "number": songInfo["number"],
+        "keywords": keywords,
       };
 
       FirebaseFirestore.instance

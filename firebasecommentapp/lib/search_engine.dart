@@ -1,11 +1,13 @@
+import 'dart:convert';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dart_phonetics/dart_phonetics.dart';
+import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:firebasecommentapp/global_vars.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:korean_romanization_converter/korean_romanization_converter.dart';
 import 'package:plagiarism_checker_plus/plagiarism_checker_plus.dart';
 import 'package:translator/translator.dart';
-import 'dart:convert';
-import 'package:dotenv/dotenv.dart' as dotenv;
-import 'package:http/http.dart' as http;
 
 List<String> keyword_to_split = [
   "/",
@@ -18,6 +20,13 @@ List<String> keyword_to_split = [
   "／",
   "「",
   "」",
+  "|",
+  "’",
+  "‘",
+  ":",
+  '"',
+  "'",
+  '"',
 ];
 List<String> stopwords = [
   "cover",
@@ -41,7 +50,17 @@ List<String> stopwords = [
   "music",
   "video",
   ",", // 나중에 리스트 구분과 헷갈리지 않기 위해 꼭 필요하다.
+  "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", // 더블 메타폰 변환을 위해 없어져야 한다.
 ];
+
+String removeEmojis(String source) {
+  // 이모지 제거용
+  String regexEmojis = "[\uD83C-\uDBFF\uDC00-\uDFFF]+";
+
+  // 이모지 제거
+  String result = source.replaceAll(RegExp(regexEmojis), "");
+  return result;
+}
 
 List<String> module1(String title, String channel) {
   /*
@@ -51,6 +70,8 @@ List<String> module1(String title, String channel) {
 
   title = title.toLowerCase();
   channel = channel.toLowerCase();
+  title = removeEmojis(title);
+  channel = removeEmojis(channel);
   // 불용어 제거
   for (String keyword in stopwords) {
     title = title.replaceAll(keyword, '');
@@ -77,18 +98,18 @@ List<String> module1(String title, String channel) {
     titleSplit = newTitleSplit;
   }
 
-  //띄어쓰기로 한 번 더 나누자
-  newChannelSplit = [];
-  for (String str in channelSplit) {
-    newChannelSplit.addAll(str.split(" "));
-  }
-  channelSplit.addAll(newChannelSplit);
+  // //띄어쓰기로 한 번 더 나누자
+  // newChannelSplit = [];
+  // for (String str in channelSplit) {
+  //   newChannelSplit.addAll(str.split(" "));
+  // }
+  // channelSplit.addAll(newChannelSplit);
 
-  newTitleSplit = [];
-  for (String str in titleSplit) {
-    newTitleSplit.addAll(str.split(" "));
-  }
-  titleSplit.addAll(newTitleSplit);
+  // newTitleSplit = [];
+  // for (String str in titleSplit) {
+  //   newTitleSplit.addAll(str.split(" "));
+  // }
+  // titleSplit.addAll(newTitleSplit);
 
   //그리고 splt때문에 비어있는 부분들 없애주자.
 
@@ -112,8 +133,20 @@ List<String> module1(String title, String channel) {
 
 final String apiUrl = 'https://api.openai.com/v1/chat/completions';
 
+List<String> splitSpace(List<String> input) {
+  List<String> newInputSplit = [];
+  for (String str in input) {
+    newInputSplit.addAll(str.split(" "));
+  }
+  input.addAll(newInputSplit);
+
+  input = input.toSet().toList();
+
+  return input;
+}
+
 String prompt =
-    "The given list elements are separated by commas.Convert the given list into Romanized form and Translated form. \n•	Romanized form means converting everything into Romanization, regardless of the original language.\n•	Translated form means converting everything into English, regardless of the original language.\n•	The lists will mainly contain Korean, English, and Japanese.\nExample input: [안녕, 吉乃, 길고 짧은 축제] \nExample output: [annyeong, yoshino, gilgo jjalbeun chugje],[hello, yoshino, long and short festival] \n When outputting, print only the two resulting lists in order. Do not use Markdown syntax, extra words, or commas for anything other than separating list elements or separating the two result lists.";
+    "The given list elements are separated by commas.Convert the given list into Romanized form and Translated form. \n•	Romanized form means converting everything into Romanization, regardless of the original language.\n•	Translated form means converting everything into English, regardless of the original language. \n When converting into the translated form, you don’t need to consider any relationships or contexts between the elements in the list. Just translate each element from given list into English on a one-to-one basis. \n•	The lists will mainly contain Korean, English, and Japanese. \n The result must never contain special characters. \nExample input: [안녕, 吉乃, 길고 짧은 축제] \nExample output: [annyeong, yoshino, gilgo jjalbeun chugje],[hello, yoshino, long and short festival] \n When outputting, print only the two resulting lists in order. Do not use Markdown syntax, extra words, or commas for anything other than separating list elements or separating the two result lists.";
 
 Future<String> generateResponse(List<String> inputList) async {
   /*
@@ -126,7 +159,9 @@ Future<String> generateResponse(List<String> inputList) async {
 
   // String apiKey = dotenv.env['API_KEY']!;
 
-  dotenv.load('search_engine_for_utaite_src/.env');
+  dotenv.load(
+    '/Users/dt_for_flutter/flutter_firebase_comment_app/firebasecommentapp/.env',
+  );
 
   String? apiKey = dotenv.env['API_KEY'];
 
@@ -162,7 +197,7 @@ List<String> romanizedToDoubleMetaPhone(List<String> romanizedList) {
     doubleMetaphoneList += encoding!.alternates!.toList();
 
     if (doubleMetaphoneList.length != 2) {
-      print("wrong");
+      print("wrond");
     }
 
     result += doubleMetaphoneList;
@@ -208,6 +243,12 @@ Future<List<List<String>>> responseFetch(
       translated.add(responseSplit[i].trim());
     }
   }
+
+  print(romanized);
+
+  //원래 공백이 없는 일본어를 위해 나중에 나눈다.
+  romanized = splitSpace(romanized);
+  translated = splitSpace(translated);
 
   doubleMetaphone = romanizedToDoubleMetaPhone(romanized);
 
@@ -281,7 +322,7 @@ double comparisonString(String input, String target) {
   return point;
 }
 
-double comparisonDMP(List<String> inputDMPList, List<String> targetDMPList) {
+double comparisonDMP(List<String> inputDMPList, List<dynamic> targetDMPList) {
   double max = 0;
   double point;
   String match = "";
@@ -300,7 +341,7 @@ double comparisonDMP(List<String> inputDMPList, List<String> targetDMPList) {
   return max;
 }
 
-double comparisonTrans(List<String> inputList, List<String> targetList) {
+double comparisonTrans(List<String> inputList, List<dynamic> targetList) {
   var checker = PlagiarismCheckerPlus();
   double max = 0;
   String match = "";
@@ -334,27 +375,45 @@ Future<List<Map<String, dynamic>>> searchModule(String input) async {
 
   List<Map<String, dynamic>> songs = songsInfoPreLoad;
   List<double> songsPoints = [];
-  List<dynamic> songsLog = [];
 
   for (Map<String, dynamic> song in songs) {
-    List<String> keyword = [];
-    List<String> romanized = [];
-    List<String> translated = [];
-    List<String> doubleMetaphone = [];
-    romanized = song["search_tag"][0];
-    translated = song["search_tag"][1];
-    doubleMetaphone = song["search_tag"][2];
+    if (song["number"] == 0) {
+      songsPoints.add(0);
+      continue;
+    }
+    print(song["title"]);
+    List<dynamic> keyword = [];
+    List<dynamic> romanized = [];
+    List<dynamic> translated = [];
+    List<dynamic> doubleMetaphone = [];
+    romanized = song["search_tag0"];
+    print("0");
+    translated = song["search_tag1"];
+    print("1");
+    doubleMetaphone = song["search_tag2"];
+    print("2");
 
+    print(song["title"]);
     double transPoint = comparisonTrans(inputTransList, translated);
     double doubleMetaPhonePoint = comparisonDMP(inputDMPList, doubleMetaphone);
     double point = Max(transPoint, doubleMetaPhonePoint);
+    print(point);
+    print("\n\n");
     songsPoints.add(point);
   }
+
+  print(inputDMPList);
 
   List<Map<String, dynamic>> songsSorted = songs.toList();
   songsSorted.sort(
     (a, b) => songsPoints[a["number"]].compareTo(songsPoints[b["number"]]),
   );
-
   return songsSorted;
+}
+
+Future<List<int>> searchEngine(String input) async {
+  List<Map<String, dynamic>> searchResult = await searchModule(input);
+  List<int> result = [for (var song in searchResult) song["number"]];
+  result = result.reversed.toList();
+  return result;
 }
