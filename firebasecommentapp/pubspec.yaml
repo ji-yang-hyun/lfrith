@@ -44,6 +44,11 @@ dependencies:
   flutter_carousel_slider: ^1.1.0
   font_awesome_flutter: ^10.8.0
   translator: ^1.0.3+1
+  korean_romanization_converter: ^0.0.1
+  http: ^1.5.0
+  dart_phonetics: ^1.0.1
+  path_provider: ^2.1.5
+  dotenv: ^3.0.0
   plagiarism_checker_plus: ^1.0.4
 
 dev_dependencies:
