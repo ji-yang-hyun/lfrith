@@ -51,10 +51,34 @@ class _SearchScreenState extends State<SearchScreen> {
       songsToShow = mostViewedSongs;
       return;
     }
-    songsToShow = []; // 보여줄 노래 리스트 초기화
 
-    songsToShow = await searchEngine(strController.text);
-    print(songsToShow);
+    String keyword = strController.text;
+
+    if (keyword.contains('-')) {
+      String keywordTitle = keyword.split('-')[0];
+      String keywordArtist = keyword.split('-')[1];
+      if (keywordArtist.length * keywordTitle.length == 0) {
+        return;
+      }
+
+      List<int> orderByTitle = await searchEngine(keywordTitle);
+      List<int> orderByArtist = await searchEngine(keywordArtist);
+
+      List<int> rankings = [
+        for (int i = 0; i < songsInfoPreLoad.length; i++) i,
+      ];
+      rankings.sort(
+        (a, b) => (orderByArtist.indexOf(a) + orderByTitle.indexOf(a))
+            .compareTo((orderByArtist.indexOf(b) + orderByTitle.indexOf(b))),
+      );
+
+      songsToShow = rankings;
+    } else {
+      songsToShow = []; // 보여줄 노래 리스트 초기화
+
+      songsToShow = await searchEngine(keyword);
+      print(songsToShow);
+    }
 
     scrollcontroller.jumpTo(0);
 
@@ -95,6 +119,12 @@ class _SearchScreenState extends State<SearchScreen> {
                       cursorColor: Colors.black,
                       style: TextStyle(fontSize: 17),
                       decoration: InputDecoration(
+                        hintText: "  (title | artist | artist - title) 검색",
+                        hintStyle: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: (Colors.black45),
+                        ),
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: Colors.black, width: 1),
                         ),
@@ -154,7 +184,14 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   );
                 },
-                child: Text("찾으시는 음악이 없나요?   url로 검색하기"),
+                child: Text(
+                  "찾으시는 음악이 없나요?   url로 검색하기",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: (Colors.black45),
+                  ),
+                ),
               ),
             ),
             Expanded(

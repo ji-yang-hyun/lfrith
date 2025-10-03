@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +10,7 @@ import 'package:firebasecommentapp/widgets/comment_widget.dart';
 import 'package:firebasecommentapp/widgets/comment_widget_new.dart';
 import 'package:firebasecommentapp/widgets/full_comment_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -147,7 +149,27 @@ class _SongScreenState extends State<SongScreen> {
   }
 
   void gotoYoutube() async {
-    launchUrl(Uri.parse(songInfo["youtube_url"]));
+    if (Platform.isIOS) {
+      if (await canLaunchUrl(Uri.parse(songInfo["youtube_url"]))) {
+        await launchUrl(
+          Uri.parse(songInfo["youtube_url"]),
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (await canLaunchUrl(Uri.parse(songInfo["youtube_url"]))) {
+          await launchUrl(Uri.parse(songInfo["youtube_url"]));
+        } else {
+          throw 'Could not launch https://www.youtube.com/channel/UCwXdFgeE9KYzlDdR7TG9cMw';
+        }
+      }
+    } else {
+      const url = 'https://www.youtube.com/channel/UCwXdFgeE9KYzlDdR7TG9cMw';
+      if (await canLaunchUrl(Uri.parse(songInfo["youtube_url"]))) {
+        await launchUrl(Uri.parse(songInfo["youtube_url"]));
+      } else {
+        throw 'Could not launch $url';
+      }
+    }
   }
 
   void showCommentTextfieldFunc() {
@@ -160,6 +182,7 @@ class _SongScreenState extends State<SongScreen> {
   }
 
   void addCommentFrontEnd(Map<String, dynamic> commentData) {
+    HapticFeedback.mediumImpact();
     int newCommentNumber = commentsInfoPreLoad.length;
     commentData["number"] = newCommentNumber;
     songsInfoPreLoad[widget.songNumber]["comment_numbers"].add(
@@ -541,9 +564,14 @@ class _SongScreenState extends State<SongScreen> {
                                     ),
                                     height: 140,
                                     width: 140,
-                                    child: Image.network(
-                                      songInfo["albumcover"],
-                                      fit: BoxFit.fitHeight,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        gotoYoutube();
+                                      },
+                                      child: Image.network(
+                                        songInfo["albumcover"],
+                                        fit: BoxFit.fitHeight,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -707,6 +735,7 @@ class _SongScreenState extends State<SongScreen> {
                                     width: 35,
                                     child: GestureDetector(
                                       onTap: () {
+                                        HapticFeedback.mediumImpact();
                                         commentRating += 1;
                                         if (commentRating > 5) {
                                           commentRating = 1;

@@ -13,16 +13,18 @@ class UserScreenMusicWidget extends StatelessWidget {
     required this.rating,
     required this.likes,
     required this.userNumber,
+    required this.commentInfo,
   });
   final Map<String, dynamic> musicInfo;
   final int musicNumber;
   final int rating;
   final int likes;
   final int userNumber;
+  final Map<String, dynamic> commentInfo;
 
   @override
   Widget build(BuildContext context) {
-    if (musicInfo["report_count"] > 10) {
+    if (musicInfo["report_count"] > 10 || commentInfo["report_count"] > 10) {
       return SizedBox(height: 0, width: 0);
     }
     return GestureDetector(

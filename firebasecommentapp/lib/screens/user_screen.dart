@@ -26,6 +26,7 @@ class _UserScreenState extends State<UserScreen> {
   List<int> commentedSongs = [];
   List<int> commentRatings = [];
   List<int> commentLikes = [];
+  List<int> commentNumbers = [];
   void getData() async {
     // var userData =
     //     await FirebaseFirestore.instance
@@ -56,12 +57,14 @@ class _UserScreenState extends State<UserScreen> {
         if (comment["rating"] != 0) {
           commentRatings.add(comment["rating"]);
           commentLikes.add(comment["likes"]);
+          commentNumbers.add(comment["number"]);
         }
       }
     }
 
     commentRatings = List.from(commentRatings.reversed);
     commentLikes = List.from(commentLikes.reversed);
+    commentNumbers = List.from(commentNumbers.reversed);
 
     commentedSongs = List.from(userInfo["commented_songs"].reversed);
 
@@ -181,6 +184,7 @@ class _UserScreenState extends State<UserScreen> {
                             rating: commentRatings[i],
                             likes: commentLikes[i],
                             userNumber: widget.userNumber,
+                            commentInfo: commentsInfoPreLoad[commentNumbers[i]],
                           ),
                       ],
                     ),

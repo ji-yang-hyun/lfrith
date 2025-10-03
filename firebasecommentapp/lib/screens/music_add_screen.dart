@@ -258,15 +258,16 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          showSongState = false;
-                          commentText = "";
-                          validImage = true;
-                          setState(() {});
-                        },
-                        icon: Icon(Icons.close, color: Colors.red),
-                      ),
+                      if (!loading)
+                        IconButton(
+                          onPressed: () {
+                            showSongState = false;
+                            commentText = "";
+                            validImage = true;
+                            setState(() {});
+                          },
+                          icon: Icon(Icons.close, color: Colors.red),
+                        ),
                       (validImage)
                           ? ((!loading)
                               ? IconButton(
@@ -302,7 +303,7 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
                   style: TextStyle(color: Colors.black54, fontSize: 16),
                 ),
               ),
-            if (!showSongState & !loading)
+            if (!showSongState)
               TextButton(
                 onPressed: getMusicFunc,
                 child: Text(
