@@ -19,6 +19,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Map<String, dynamic>> songsInfo = [];
   TextEditingController strController = TextEditingController();
   List<int> songsToShow = [];
+  ScrollController scrollcontroller = ScrollController();
 
   void getSongsInfo() async {
     songsInfo = songsInfoPreLoad; // homeScreen에서 load한거 그냥 갖다 쓰자,
@@ -42,12 +43,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void searchFunc() async {
     if (strController.text.isEmpty) {
+      List<Map<String, dynamic>> songsInfoCopy = List.from(songsInfo);
+      songsInfoCopy.sort((a, b) => b["views"].compareTo(a["views"]));
+      List<int> mostViewedSongs = List.from([
+        for (var m in songsInfoCopy) m["number"],
+      ]);
+      songsToShow = mostViewedSongs;
       return;
     }
     songsToShow = []; // 보여줄 노래 리스트 초기화
 
     songsToShow = await searchEngine(strController.text);
     print(songsToShow);
+
+    scrollcontroller.jumpTo(0);
 
     setState(() {});
   }
@@ -150,6 +159,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             Expanded(
               child: SingleChildScrollView(
+                controller: scrollcontroller,
                 child: Column(
                   children: [
                     for (int i in songsToShow)

@@ -28,6 +28,7 @@ List<String> keyword_to_split = [
   '"',
   "'",
   '"',
+  "ㅣ",
 ];
 List<String> stopwords = [
   "cover",
@@ -50,6 +51,8 @@ List<String> stopwords = [
   "official",
   "music",
   "video",
+  "】",
+  "【",
   ",", // 나중에 리스트 구분과 헷갈리지 않기 위해 꼭 필요하다.
   "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", // 더블 메타폰 변환을 위해 없어져야 한다.
 ];
@@ -147,7 +150,7 @@ List<String> splitSpace(List<String> input) {
 }
 
 String prompt =
-    "The given list elements are separated by commas.Convert the given list into Romanized form and Translated form. \n•	Romanized form means converting everything into Romanization, regardless of the original language.\n•	Translated form means converting everything into English, regardless of the original language. \n When converting into the translated form, you don’t need to consider any relationships or contexts between the elements in the list. Just translate each element from given list into English on a one-to-one basis. \n•	The lists will mainly contain Korean, English, and Japanese. \n The result must never contain special characters. \nExample input: [안녕, 吉乃, 길고 짧은 축제] \nExample output: [annyeong, yoshino, gilgo jjalbeun chugje],[hello, yoshino, long and short festival] \n When outputting, print only the two resulting lists in order. Do not use Markdown syntax, extra words, or commas for anything other than separating list elements or separating the two result lists.";
+    "The given list elements are separated by commas.Convert the given list into Romanized form and Translated form. \n•	Romanized form means converting everything into Romanization, regardless of the original language.\n•	Translated form means converting everything into English, regardless of the original language. \n When converting into the translated form, you don’t need to consider any relationships or contexts between the elements in the list. Just translate each element from given list into English on a one-to-one basis. \n When converting into Romanized form, do not establish any correlation between the elements of the list. You must not consider any relationships or contexts between the elements in the list. \n When you convert korean to romanized, Convert each element individually and strictly follow the official Romanization rules of the korean. Every element must be Romanized consistently and accurately according to the standardized rules, with no exceptions. \n •	The lists will mainly contain Korean, English, and Japanese. \n The result must never contain special characters. \nExample input: [안녕, 吉乃, 길고 짧은 축제] \nExample output: [annyeong, yoshino, gilgo jjalbeun chugje],[hello, yoshino, long and short festival] \n When outputting, print only the two resulting lists in order. Do not use Markdown syntax, extra words, or commas for anything other than separating list elements or separating the two result lists.";
 
 Future<String> generateResponse(List<String> inputList) async {
   /*
@@ -173,6 +176,7 @@ Future<String> generateResponse(List<String> inputList) async {
     headers: {"Content-Type": "application/json", "Authorization": token},
     body: jsonEncode({
       "model": "gpt-4o",
+
       'messages': [
         {'role': 'system', 'content': prompt},
         {'role': 'user', 'content': inputList.toString()},
@@ -279,6 +283,7 @@ double Max(double a, double b) {
 List<String> inputToDoubleMetaPhone(String inputText) {
   final converter = KoreanRomanizationConverter();
   var romanizedInputText = converter.romanize(inputText);
+  print(romanizedInputText);
   // print(romanizedInputText);
   final doubleMetaphone = DoubleMetaphone.withMaxLength(100);
   final encoding = doubleMetaphone.encode(romanizedInputText);
@@ -302,15 +307,10 @@ double comparisonString(String input, String target) {
   //순서가 중요하다.
   // 앞쪽부터 쭉 따라가면서 순서에 맞는 알파벳이 순서에 있는게 몇 개가 있는지 체크하자.
 
-  List<String> inputCList = input.split("");
-  List<String> targetCList = target.split("");
-
   int cnt = levenshteinDistance(target, input);
 
   //더블 메타폰 형태의 유사도 점수.
-  double point =
-      (Max(inputCList.length + 0.0, targetCList.length + 0.0) - cnt) /
-      Max(inputCList.length + 0.0, targetCList.length + 0.0);
+  double point = (input.length - cnt) / input.length;
 
   return point;
 }

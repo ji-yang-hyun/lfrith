@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dotenv/dotenv.dart';
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/home_screen.dart';
 import 'package:firebasecommentapp/screens/song_screen.dart';
@@ -7,6 +8,7 @@ import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:firebasecommentapp/widgets/song_check_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -26,6 +28,7 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
   double rating = 0;
   Map<String, dynamic> newSong = {};
   bool showSongState = false;
+  bool loading = false;
   String commentText = "";
   String description = "";
   //클립보드가 비었을 때 들어갈 url
@@ -64,6 +67,40 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
     artist = video.author;
     views = video.engagement.viewCount;
     likes = video.engagement.likeCount ?? 0;
+
+    newSong = {
+      "albumcover": albumCoverImgUrl,
+      "artist": artist,
+      "comment_numbers": [],
+      "likes": likes,
+      "report_count": 0,
+      // "search_tag0": searchTag0,
+      // "search_tag1": searchTag1,
+      // "search_tag2": searchTag2,
+      "title": title,
+      "views": views,
+      "youtube_url": musicUrl,
+      "rating": rating,
+      "number": 0,
+      // "keywords": keywords,
+    };
+
+    showSongState = true;
+    setState(() {});
+
+    print(newSong);
+  }
+
+  void addMusicFunc() async {
+    if (!validImage) {
+      commentText = "이미지가 유효하지 않습니다";
+      setState(() {});
+      return;
+    }
+
+    loading = true;
+    setState(() {});
+
     List<String> keywords = module1(title, artist);
     List<List<String>> searchTag = await module2(keywords);
     List<String> searchTag0 = searchTag[0];
@@ -81,24 +118,11 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       "search_tag2": searchTag2,
       "title": title,
       "views": views,
-      "youtube_url": musicUrl,
+      "youtube_url": newSong["youtube_url"],
       "rating": rating,
       "number": 0,
       "keywords": keywords,
     };
-
-    showSongState = true;
-    setState(() {});
-
-    print(newSong);
-  }
-
-  void addMusicFunc() async {
-    if (!validImage) {
-      commentText = "이미지가 유효하지 않습니다";
-      setState(() {});
-      return;
-    }
 
     var songs =
         await FirebaseFirestore.instance
@@ -244,10 +268,27 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
                         icon: Icon(Icons.close, color: Colors.red),
                       ),
                       (validImage)
-                          ? IconButton(
-                            onPressed: addMusicFunc,
-                            icon: Icon(Icons.arrow_forward, color: Colors.blue),
-                          )
+                          ? ((!loading)
+                              ? IconButton(
+                                onPressed: addMusicFunc,
+                                icon: Icon(
+                                  Icons.arrow_forward,
+                                  color: Colors.blue,
+                                ),
+                              )
+                              : SpinKitFoldingCube(
+                                size: 20,
+                                itemBuilder: (context, index) {
+                                  final colors = [
+                                    // Colors.white,
+                                    Colors.blueAccent,
+                                  ];
+                                  final color = colors[index % colors.length];
+                                  return DecoratedBox(
+                                    decoration: BoxDecoration(color: color),
+                                  );
+                                },
+                              ))
                           : SizedBox(),
                     ],
                   ),
@@ -261,7 +302,7 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
                   style: TextStyle(color: Colors.black54, fontSize: 16),
                 ),
               ),
-            if (!showSongState)
+            if (!showSongState & !loading)
               TextButton(
                 onPressed: getMusicFunc,
                 child: Text(
