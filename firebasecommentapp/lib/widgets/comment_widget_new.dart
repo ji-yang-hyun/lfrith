@@ -93,6 +93,7 @@ class CommentWidgetNew extends StatelessWidget {
             context: context,
             builder: (context) {
               return AlertDialog(
+                backgroundColor: Colors.white,
                 // clipBehavior: Clip.antiAlias,
                 content: Container(
                   color: Colors.white,
