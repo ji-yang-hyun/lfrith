@@ -591,13 +591,16 @@ class _SongScreenState extends State<SongScreen> {
                                     ),
                                     SizedBox(
                                       width: 250,
-                                      child: Text(
-                                        songInfo["title"],
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500,
-                                          overflow: TextOverflow.ellipsis,
-                                          color: Colors.white,
+                                      height: 30,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Text(
+                                          "${songInfo["title"]}      ",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                     ),
