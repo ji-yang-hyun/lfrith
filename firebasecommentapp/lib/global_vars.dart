@@ -2,6 +2,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 
+int musicAddLoading = 0;
+
 int loginUserNumber = 1;
 
 int latestSongNumber = 0;

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dart_phonetics/dart_phonetics.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:firebasecommentapp/global_vars.dart';
@@ -51,11 +50,52 @@ List<String> stopwords = [
   "official",
   "music",
   "video",
-  "】",
-  "【",
+  "불렀습니다",
   ",", // 나중에 리스트 구분과 헷갈리지 않기 위해 꼭 필요하다.
   "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", // 더블 메타폰 변환을 위해 없어져야 한다.
 ];
+
+List<String> smallAlphabetTable = [
+  "ᴀ",
+  "ʙ",
+  "ᴄ",
+  "ᴅ",
+  "ᴇ",
+  "ғ",
+  "ɢ",
+  "ʜ",
+  "ɪ",
+  "ᴊ",
+  "ᴋ",
+  "ʟ",
+  "ᴍ",
+  "ɴ",
+  "ᴏ",
+  "ᴘ",
+  "ǫ",
+  "ʀ",
+  "s",
+  "ᴛ",
+  "ᴜ",
+  "ᴠ",
+  "ᴡ",
+  "x",
+  "ʏ",
+  "ᴢ",
+];
+
+String smallAlphabetFetch(String source) {
+  List<String> sourceList = source.split("");
+  String result = "";
+  for (int i = 0; i < sourceList.length; i++) {
+    String str = sourceList[0];
+    if (smallAlphabetTable.contains(str)) {
+      sourceList[i] = String.fromCharCode(97 + smallAlphabetTable.indexOf(str));
+    }
+    result += sourceList[i];
+  }
+  return result;
+}
 
 String removeEmojis(String source) {
   // 이모지 제거용
@@ -66,16 +106,35 @@ String removeEmojis(String source) {
   return result;
 }
 
+String fetch(String source) {
+  print(source);
+  String regex = r"([A-Z|a-z| |ㄱ-ㅎ|ㅏ-ㅣ|가-힣|ぁ-んァ-ンー一-龯])";
+  //영어만 남기면 '를 표현하지 못 하기 때문에 의미가 좀 달라질수도. 그러니까 여기서까지는 '를 포함하고 그 뒤에 로마자로 바꿀 때 빼자.
+  //숫자는 포함 못 해줘서 미안해요 ㅠㅠㅠ
+  //정규식에 포함돼서 그런건진 모르겠지만 | 도 포함이 된다. 그러니 따로 없애주자 ㅎㅎ
+  Iterable<Match> matches = RegExp(regex).allMatches(source);
+
+  String result = "";
+  for (Match match in matches) {
+    result += match.group(0)!;
+  }
+  result = result.replaceAll("|", "");
+  print(result);
+
+  return result;
+}
+
 List<String> module1(String title, String channel) {
   /*
   우타이테 전용 인덱싱
   제목과 채널이름을 매개변수로 받아 키워드 리스트를 return 한다.
   */
 
+  title = smallAlphabetFetch(title);
+  channel = smallAlphabetFetch(channel);
+
   title = title.toLowerCase();
   channel = channel.toLowerCase();
-  title = removeEmojis(title);
-  channel = removeEmojis(channel);
   // 불용어 제거
   for (String keyword in stopwords) {
     title = title.replaceAll(keyword, '');
@@ -102,26 +161,18 @@ List<String> module1(String title, String channel) {
     titleSplit = newTitleSplit;
   }
 
-  // //띄어쓰기로 한 번 더 나누자
-  // newChannelSplit = [];
-  // for (String str in channelSplit) {
-  //   newChannelSplit.addAll(str.split(" "));
-  // }
-  // channelSplit.addAll(newChannelSplit);
-
-  // newTitleSplit = [];
-  // for (String str in titleSplit) {
-  //   newTitleSplit.addAll(str.split(" "));
-  // }
-  // titleSplit.addAll(newTitleSplit);
-
-  //그리고 splt때문에 비어있는 부분들 없애주자.
-
   for (int i = 0; i < titleSplit.length; i++) {
     titleSplit[i] = titleSplit[i].trim();
   }
   for (int i = 0; i < channelSplit.length; i++) {
     channelSplit[i] = channelSplit[i].trim();
+  }
+
+  for (int i = 0; i < channelSplit.length; i++) {
+    channelSplit[i] = fetch(channelSplit[i]);
+  }
+  for (int i = 0; i < titleSplit.length; i++) {
+    titleSplit[i] = fetch(titleSplit[i]);
   }
 
   channelSplit = channelSplit.toSet().toList();
@@ -135,12 +186,12 @@ List<String> module1(String title, String channel) {
   return titleSplit + channelSplit;
 }
 
-final String apiUrl = 'https://api.openai.com/v1/chat/completions';
+final String apiUrl = 'https://api.openai.com/v1/responses';
 
-List<String> splitSpace(List<String> input) {
+List<String> splitBySpace(List<String> input) {
   List<String> newInputSplit = [];
   for (String str in input) {
-    newInputSplit.addAll(str.split(" "));
+    newInputSplit.addAll(splitSpace(str));
   }
   input.addAll(newInputSplit);
 
@@ -149,23 +200,32 @@ List<String> splitSpace(List<String> input) {
   return input;
 }
 
-String prompt =
-    "The given list elements are separated by commas.Convert the given list into Romanized form and Translated form. \n•	Romanized form means converting japanese into Romanization.\n When converting to Romanized form, Korean must always be kept as is, and only Japanese should be converted into Romanized form. Therefore, the resulting lists must contain only Korean and English. \n	Translated form means converting everything into English, regardless of the original language. \n When converting into the translated form, you don’t need to consider any relationships or contexts between the elements in the list. Just translate each element from given list into English on a one-to-one basis. \n •	The lists will mainly contain Korean, English, and Japanese. \n The result must never contain special characters. \nExample input: [안녕, 吉乃좋아, happy吉乃] \nExample output: [안녕, yoshino좋아, happy yoshino],[hello, yoshino, happy yoshino] \n When outputting, print only the two resulting lists in order. Do not use Markdown syntax, extra words, or commas for anything other than separating list elements or separating the two result lists.";
+List<String> splitSpace(String source) {
+  List<String> result = [];
+  List<String> sourceSplit = source.split(" ");
+  for (String str in sourceSplit) {
+    result.add(str);
+    source = source.replaceAll("$str ", "");
+    result.add(source);
+  }
 
-Future<String> generateResponse(List<String> inputList) async {
-  /*
-  module1에서 indexing한 키워드들의 리스트를 받아서 chatGPT에게 입력으로 전달한다.
-  chatGPT는 프롬프트를 따라 로마자, 번역 형태를 쉼표와 []로 구분된
-  String 으로 return 해준다. 그리고 이 함수는 그 String을 return한다.
-  response는 [로마자, 번역]형식.
-  */
-  // await dotenv.load(fileName: '.env');
+  return result;
+}
 
-  // String apiKey = dotenv.env['API_KEY']!;
+String promptRomanize =
+    "Translate the given input string into Romanized form. For Korean text, follow the standard rules for Romanization. The output must not contain any commas or other special characters. Return only the result as a plain string without any additional words or Markdown syntax.";
 
+String promptTranslate =
+    "Translate the input sentence into English. The output must not contain any commas or other special characters. Return only the result as a plain string without any additional words or Markdown syntax.";
+
+Future<String> generateResponse(String input, String prompt) async {
   dotenv.load(
     '/Users/dt_for_flutter/flutter_firebase_comment_app/firebasecommentapp/.env',
   );
+  /*
+  뭘 어떻게 해도 이 env파일 위치를 내 컴 경로 말고 다른걸로 하지를 못하겠네
+  그냥 내 컴으로 말고 출시할때는 문자열로 그냥 넣어주는걸로 하자.
+  */
 
   String? apiKey = dotenv.env['API_KEY'];
 
@@ -175,17 +235,18 @@ Future<String> generateResponse(List<String> inputList) async {
     Uri.parse(apiUrl),
     headers: {"Content-Type": "application/json", "Authorization": token},
     body: jsonEncode({
-      "model": "gpt-4o",
-      'messages': [
-        {'role': 'system', 'content': prompt},
-        {'role': 'user', 'content': inputList.toString()},
-      ],
-      'max_tokens': 10000,
+      "model": "gpt-5",
+      "input":
+          "Forget all the previous inputs, outputs, and prompts. input : $input \n $prompt",
+      "reasoning": {"effort": "low"},
+      // "max_tokens": 2000,
     }),
   );
   if (response.statusCode == 200) {
     Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-    String text = data["choices"][0]["message"]["content"].toString().trim();
+    // print(data);
+    String text = "";
+    text = data["output"][1]["content"][0]["text"];
     return text;
   } else {
     throw Exception("Failed to generate response: ${response.statusCode}");
@@ -212,82 +273,121 @@ List<String> romanizedToDoubleMetaPhone(List<String> romanizedList) {
 
 String removeJP(String source) {
   // 이모지 제거용
-  String regexJP = r"([ぁ-んァ-ン一-龯])";
+  String regexJP = r"([ぁ-んァ-ンー一-龯])";
 
   // 이모지 제거
   String result = source.replaceAll(RegExp(regexJP), "");
+
   return result;
 }
 
-Future<List<List<String>>> responseFetch(
-  String response,
-  int keywordCount,
-  List<String> keywords,
-) async {
-  /*
-    generateResponse에서 response를 받고, 알맞은 결과인지 확인을 위해
-    처음 입력값으로 주어진 키워드들의 개수도 확인한다.
-  */
+String removeKR(String source) {
+  // 이모지 제거용
+  String regexKR = r"([ㄱ-ㅎ|ㅏ-ㅣ|가-힣])";
 
+  // 이모지 제거
+  String result = source.replaceAll(RegExp(regexKR), "");
+  return result;
+}
+
+String removeEN(String source) {
+  // 이모지 제거용
+  String regexEN = r"([A-Z|a-z| ])";
+
+  // 이모지 제거
+  String result = source.replaceAll(RegExp(regexEN), "");
+  return result;
+}
+
+bool checkResponseRomanized(String response) {
+  if (response.isEmpty) {
+    return false;
+  }
+  if (removeJP(response) != response) {
+    return false;
+  }
+  if (removeKR(response) != response) {
+    return false;
+  }
+  if (response.contains(",")) {
+    return false;
+  }
+  if (removeEN(response).isNotEmpty) {
+    return false;
+  }
+
+  //나머지는 나중에 거른다.
+  return true;
+}
+
+bool checkResponseTranslated(String response) {
+  if (response.isEmpty) {
+    return false;
+  }
+  if (removeJP(response) != response) {
+    return false;
+  }
+  if (removeKR(response) != response) {
+    return false;
+  }
+  if (response.contains(",")) {
+    return false;
+  }
+  //나머지는 나중에 거른다.
+  return true;
+}
+
+Future<String> romanize(String input, int n) async {
+  //혹시나 무한루프를 돌 수 있기 때문에 n으로 안전장치
+  input = input.replaceAll("'", "");
+
+  if (n > 10) {
+    return "something went wrong";
+  }
+  String response = await generateResponse(input, promptRomanize);
+  if (!checkResponseRomanized(response)) {
+    print("wrong");
+    return await romanize(input, n + 1);
+  } else {
+    return response;
+  }
+}
+
+Future<String> translate(String input, int n) async {
+  if (n > 10) {
+    return "something went wrong";
+  }
+  String response = await generateResponse(input, promptTranslate);
+  if (!checkResponseTranslated(response)) {
+    print("wrong");
+    return await translate(input, n + 1);
+  } else {
+    return response;
+  }
+}
+
+Future<List<List<String>>> module2(List<String> keywords) async {
+  //module1에서 모든 특수문자가 걸러졌을거라는 가정 하에 시작한다.
   List<String> romanized = [];
   List<String> translated = [];
-  List<String> doubleMetaphone = [];
-  List<List<String>> result = [[], [], []];
 
-  List<String> responseSplit = [];
+  musicAddLoading = 0;
 
-  response = response.replaceAll("[", "");
-  response = response.replaceAll("]", "");
-  response = response.replaceAll("\n", "");
-  responseSplit = response.split(',');
-
-  if (keywordCount * 2 == responseSplit.length &&
-      (removeJP(responseSplit.toString()) == responseSplit.toString())) {
-    print("good");
-  } else {
-    print("wrong response try again");
-    var value = await module2(keywords);
-    return value;
+  for (String keyword in keywords) {
+    romanized.add(await romanize(keyword, 0));
+    translated.add(await translate(keyword, 0));
+    musicAddLoading += 1;
+    print("done");
   }
 
-  for (int i = 0; i < responseSplit.length; i++) {
-    if (i < responseSplit.length / 2) {
-      romanized.add(responseSplit[i].trim());
-    } else {
-      translated.add(responseSplit[i].trim());
-    }
-  }
+  romanized = splitBySpace(romanized);
+  translated = splitBySpace(translated);
+
+  List<String> doubleMetaphone = romanizedToDoubleMetaPhone(romanized);
 
   print(romanized);
-
-  final converter = KoreanRomanizationConverter();
-  for (int i = 0; i < romanized.length; i++) {
-    String str = romanized[i];
-    romanized[i] = converter.romanize(str);
-  }
-
-  print(romanized);
-
-  //원래 공백이 없는 일본어를 위해 나중에 나눈다.
-  romanized = splitSpace(romanized);
-  translated = splitSpace(translated);
-
-  doubleMetaphone = romanizedToDoubleMetaPhone(romanized);
-
-  result = [romanized, translated, doubleMetaphone];
-
-  return result;
-}
-
-Future<List<List<String>>> module2(List<String> keywordSplit) async {
-  String response = await generateResponse(keywordSplit);
-  List<List<String>> keyword3form = await responseFetch(
-    response,
-    keywordSplit.length,
-    keywordSplit,
-  );
-
-  return keyword3form;
+  print(translated);
+  return [romanized, translated, doubleMetaphone];
 }
 
 double Max(double a, double b) {

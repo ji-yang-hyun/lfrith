@@ -94,13 +94,20 @@ class CommentWidgetNew extends StatelessWidget {
             builder: (context) {
               return AlertDialog(
                 // clipBehavior: Clip.antiAlias,
-                content: SizedBox(
+                content: Container(
+                  color: Colors.white,
                   height: 95,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(height: 10),
-                      Text("댓글을 삭제할까요?", style: TextStyle(fontSize: 17)),
+                      Text(
+                        "댓글을 삭제할까요?",
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

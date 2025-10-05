@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotenv/dotenv.dart';
+import 'dart:async';
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/home_screen.dart';
 import 'package:firebasecommentapp/screens/song_screen.dart';
@@ -8,8 +9,8 @@ import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:firebasecommentapp/widgets/song_check_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
+import 'package:percent_indicator/flutter_percent_indicator.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class MusicAddScreen extends StatefulWidget {
@@ -31,6 +32,7 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
   bool loading = false;
   String commentText = "";
   String description = "";
+  int musicAddLen = 0;
   //클립보드가 비었을 때 들어갈 url
   String nullUrl = "https://youtu.be/3R8WylnTONA?si=kHwD7_p6ZKqQEX5e";
 
@@ -98,32 +100,6 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       return;
     }
 
-    loading = true;
-    setState(() {});
-
-    List<String> keywords = module1(title, artist);
-    List<List<String>> searchTag = await module2(keywords);
-    List<String> searchTag0 = searchTag[0];
-    List<String> searchTag1 = searchTag[1];
-    List<String> searchTag2 = searchTag[2];
-
-    newSong = {
-      "albumcover": albumCoverImgUrl,
-      "artist": artist,
-      "comment_numbers": [],
-      "likes": likes,
-      "report_count": 0,
-      "search_tag0": searchTag0,
-      "search_tag1": searchTag1,
-      "search_tag2": searchTag2,
-      "title": title,
-      "views": views,
-      "youtube_url": newSong["youtube_url"],
-      "rating": rating,
-      "number": 0,
-      "keywords": keywords,
-    };
-
     var songs =
         await FirebaseFirestore.instance
             .collection('songs')
@@ -177,6 +153,40 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
         return;
       }
     }
+
+    loading = true;
+    setState(() {});
+
+    Timer timer;
+    timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+      setState(() {});
+    });
+
+    List<String> keywords = module1(title, artist);
+    musicAddLen = keywords.length;
+    List<List<String>> searchTag = await module2(keywords);
+    List<String> searchTag0 = searchTag[0];
+    List<String> searchTag1 = searchTag[1];
+    List<String> searchTag2 = searchTag[2];
+
+    timer.cancel();
+
+    newSong = {
+      "albumcover": albumCoverImgUrl,
+      "artist": artist,
+      "comment_numbers": [],
+      "likes": likes,
+      "report_count": 0,
+      "search_tag0": searchTag0,
+      "search_tag1": searchTag1,
+      "search_tag2": searchTag2,
+      "title": title,
+      "views": views,
+      "youtube_url": newSong["youtube_url"],
+      "rating": rating,
+      "number": 0,
+      "keywords": keywords,
+    };
 
     newSong["number"] = songCount + 1;
 
@@ -243,9 +253,10 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       bottomNavigationBar: myBottomNavigationBar(currentWidgetName: "SEARCH"),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            SizedBox(height: 200),
             if (showSongState)
               Column(
                 children: [
@@ -277,18 +288,50 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
                                   color: Colors.blue,
                                 ),
                               )
-                              : SpinKitFoldingCube(
-                                size: 20,
-                                itemBuilder: (context, index) {
-                                  final colors = [
-                                    // Colors.white,
-                                    Colors.blueAccent,
-                                  ];
-                                  final color = colors[index % colors.length];
-                                  return DecoratedBox(
-                                    decoration: BoxDecoration(color: color),
-                                  );
-                                },
+                              : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(height: 20),
+                                  SizedBox(
+                                    child: TweenAnimationBuilder<double>(
+                                      duration: const Duration(
+                                        milliseconds: 250,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                      tween: Tween<double>(
+                                        begin:
+                                            (musicAddLoading - 1 < 0)
+                                                ? 0.1
+                                                : (musicAddLoading -
+                                                    1 / musicAddLen),
+                                        end:
+                                            (musicAddLoading <= 0)
+                                                ? 0.1
+                                                : (musicAddLoading /
+                                                    musicAddLen),
+                                      ),
+                                      builder:
+                                          (context, value, _) => Container(
+                                            width: 200 * value,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: (Colors.blue),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  Text(
+                                    "이 곡을 처음 추가하는 중이에요!",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ],
                               ))
                           : SizedBox(),
                     ],
