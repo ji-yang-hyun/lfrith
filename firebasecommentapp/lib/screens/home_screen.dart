@@ -44,6 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
     songsInfoPreLoad = songsInfoPrePreLoad;
     commentsInfoPreLoad = commentsInfoPrePreLoad;
     usersInfoPreLoad = usersInfoPrePreLoad;
+    getSongsInfo();
+    setState(() {});
 
     print("update done!");
   }
