@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:dart_phonetics/dart_phonetics.dart';
-import 'package:dotenv/dotenv.dart' as dotenv;
+// import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -219,15 +219,17 @@ String promptTranslate =
     "Translate the input sentence into English. The output must not contain any commas or other special characters. Return only the result as a plain string without any additional words or Markdown syntax.";
 
 Future<String> generateResponse(String input, String prompt) async {
-  dotenv.load(
-    '/Users/dt_for_flutter/flutter_firebase_comment_app/firebasecommentapp/.env',
-  );
+  // dotenv.load(
+  //   '/Users/dt_for_flutter/flutter_firebase_comment_app/firebasecommentapp/.env',
+  // );
   /*
   뭘 어떻게 해도 이 env파일 위치를 내 컴 경로 말고 다른걸로 하지를 못하겠네
   그냥 내 컴으로 말고 출시할때는 문자열로 그냥 넣어주는걸로 하자.
   */
 
-  String? apiKey = dotenv.env['API_KEY'];
+  // String? apiKey = dotenv.env['API_KEY'];
+
+  String apiKey = "";
 
   String token = "Bearer $apiKey";
 

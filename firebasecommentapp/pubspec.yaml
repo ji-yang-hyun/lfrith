@@ -47,8 +47,10 @@ dependencies:
   korean_romanization_converter: ^0.0.1
   http: ^1.5.0
   dart_phonetics: ^1.0.1
-  path_provider: ^2.1.5
-  dotenv: ^3.0.0
+  #이 둘이 웹에서 동작하지 않는다.
+  # path_provider: ^2.1.5
+  # dotenv: ^3.0.0
+  #
   plagiarism_checker_plus: ^1.0.4
   percent_indicator: ^4.2.5
 

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/song_screen.dart';
