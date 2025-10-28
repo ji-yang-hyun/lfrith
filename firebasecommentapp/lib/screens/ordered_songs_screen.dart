@@ -1,7 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebasecommentapp/global_vars.dart';
-import 'package:firebasecommentapp/screens/search_screen.dart';
-import 'package:firebasecommentapp/screens/song_screen.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:firebasecommentapp/widgets/mini_music_widget.dart';
 import 'package:flutter/material.dart';

@@ -1,9 +1,5 @@
-import 'dart:math';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/login_screen.dart';
-import 'package:firebasecommentapp/widgets/big_music_widget.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:firebasecommentapp/widgets/user_screen_music_widget.dart';
 import 'package:flutter/material.dart';

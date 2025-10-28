@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:dart_phonetics/dart_phonetics.dart';
 // import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:firebasecommentapp/global_vars.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:korean_romanization_converter/korean_romanization_converter.dart';
 import 'package:plagiarism_checker_plus/plagiarism_checker_plus.dart';

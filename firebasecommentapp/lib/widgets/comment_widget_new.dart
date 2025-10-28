@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/global_vars.dart';
-import 'package:firebasecommentapp/screens/song_screen.dart';
 import 'package:firebasecommentapp/screens/user_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

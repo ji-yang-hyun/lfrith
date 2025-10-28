@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/global_vars.dart';
-import 'package:firebasecommentapp/screens/home_screen.dart';
 import 'package:firebasecommentapp/screens/music_add_screen.dart';
-import 'package:firebasecommentapp/screens/song_screen.dart';
 import 'package:firebasecommentapp/search_engine.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
 import 'package:firebasecommentapp/widgets/mini_music_widget.dart';
