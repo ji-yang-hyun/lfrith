@@ -37,10 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
         await commentsInfoPreLoadUpdate(mode: 1);
     List<Map<String, dynamic>> usersInfoPrePreLoad =
         await usersInfoPreLoadUpdate(mode: 1);
+    List<Map<String, dynamic>> artistsInfoPrePreLoad =
+        await artistsInfoPreLoadUpdate(mode: 1);
 
     songsInfoPreLoad = songsInfoPrePreLoad;
     commentsInfoPreLoad = commentsInfoPrePreLoad;
     usersInfoPreLoad = usersInfoPrePreLoad;
+    artistsInfoPreLoad = artistsInfoPrePreLoad;
     getSongsInfo();
     setState(() {});
 

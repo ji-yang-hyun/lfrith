@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/login_screen.dart';
 import 'package:firebasecommentapp/search_engine.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
@@ -29,7 +30,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
     for (Map<String, dynamic> songInfo in songsInfo) {
       String url = songInfo["youtube_url"];
-      if (songInfo["number"] == 0) {
+      if (songInfo["number"] != 2) {
         continue;
       }
 
@@ -37,19 +38,39 @@ class _AdminScreenState extends State<AdminScreen> {
       setState(() {});
       var yt = YoutubeExplode();
       var video = await yt.videos.get(url);
-      String albumCoverImgUrl = video.thumbnails.maxResUrl;
       String title = video.title;
       String artist = video.author;
       int views = video.engagement.viewCount;
       int likes = video.engagement.likeCount ?? 0;
-      List<String> keywords = module1(title, artist);
-      List<List<String>> searchTag = await module2(keywords);
-      List<String> searchTag0 = searchTag[0];
-      List<String> searchTag1 = searchTag[1];
-      List<String> searchTag2 = searchTag[2];
+      String channelUrl = "";
+      int subscriber = 0;
+      String channelProfileUrl = "";
+      channelUrl = "https://www.youtube.com/channel/${video.channelId}";
+
+      var channel = await yt.channels.get(channelUrl);
+      channelProfileUrl = channel.logoUrl;
+      subscriber = channel.subscribersCount ?? 0;
+
+      List<String> keywordsTitle = module1(title, "");
+      List<String> keywordsArtist = module1(artist, "");
+      List<String> keywords = keywordsTitle + keywordsArtist;
+
+      List<List<String>> searchTagTitle = await module2(keywordsTitle);
+      List<String> searchTag0Title = searchTagTitle[0];
+      List<String> searchTag1Title = searchTagTitle[1];
+      List<String> searchTag2Title = searchTagTitle[2];
+
+      List<List<String>> searchTagArtist = await module2(keywordsArtist);
+      List<String> searchTag0Artist = searchTagArtist[0];
+      List<String> searchTag1Artist = searchTagArtist[1];
+      List<String> searchTag2Artist = searchTagArtist[2];
+
+      List<String> searchTag0 = searchTag0Title + searchTag0Artist;
+      List<String> searchTag1 = searchTag1Title + searchTag1Artist;
+      List<String> searchTag2 = searchTag2Title + searchTag2Artist;
 
       var newSongInfo = {
-        "albumcover": albumCoverImgUrl,
+        "albumcover": songInfo["albumcover"],
         "artist": artist,
         "comment_numbers": songInfo["comment_numbers"],
         "likes": likes,
@@ -70,7 +91,46 @@ class _AdminScreenState extends State<AdminScreen> {
           .doc('song${songInfo["number"]}')
           .set(newSongInfo);
 
+      await artistsInfoPreLoadUpdate();
+
+      int artistDB = 0;
+      for (var artistM in artistsInfoPreLoad) {
+        if (artistM["name"] == artist) {
+          artistDB = artistM["number"];
+        }
+      }
+
+      if (artistDB == 0) {
+        Map<String, dynamic> newArtist = {
+          "number": artistsInfoPreLoad.length,
+          "channel_url": channelUrl,
+          "keywords": keywordsArtist,
+          "name": artist,
+          "profile_image": channelProfileUrl,
+          "search_tag0": searchTag0Artist,
+          "search_tag1": searchTag1Artist,
+          "search_tag2": searchTag2Artist,
+          "songs": [songInfo["number"]],
+          "subscriber": subscriber,
+        };
+
+        FirebaseFirestore.instance
+            .collection('artists')
+            .doc('artist${newArtist["number"]}')
+            .set(newArtist);
+      } else {
+        Map<String, dynamic> artistInfo = artistsInfoPreLoad[artistDB];
+        artistInfo["songs"].add(songInfo["number"]);
+        FirebaseFirestore.instance
+            .collection('artists')
+            .doc('artist${artistInfo["number"]}')
+            .set(artistInfo);
+      }
+
+      await artistsInfoPreLoadUpdate();
+
       currentSongTitle = "update ${songInfo["number"]} done";
+      await songsInfoPreLoadUpdate();
       setState(() {});
     }
 

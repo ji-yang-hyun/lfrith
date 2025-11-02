@@ -24,6 +24,10 @@ FocusNode searchTextFieldFocusNode = FocusNode();
 List<Map<String, dynamic>> songsInfoPreLoad = [];
 List<Map<String, dynamic>> usersInfoPreLoad = [];
 List<Map<String, dynamic>> commentsInfoPreLoad = [];
+List<Map<String, dynamic>> artistsInfoPreLoad = [];
+
+// 모드 1,0의 차이는 변경점을 바로 적용시킬거냐, 아니냐 차이인데
+// home같이 다 한꺼번에 적용시켜야 하는 경우 mode 1을 사용해 나중에 한꺼번에 적용시킨다.
 
 Future<List<Map<String, dynamic>>> songsInfoPreLoadUpdate({
   int mode = 0,
@@ -90,6 +94,28 @@ Future<List<Map<String, dynamic>>> usersInfoPreLoadUpdate({
   }
 
   return usersInfo;
+}
+
+Future<List<Map<String, dynamic>>> artistsInfoPreLoadUpdate({
+  int mode = 0,
+}) async {
+  var artistsData =
+      await FirebaseFirestore.instance
+          .collection('artists')
+          .orderBy("number")
+          .get();
+  var artistsInfo = [
+    for (int i = 0; i < artistsData.size; i++)
+      Map<String, dynamic>.from(artistsData.docs[i].data() as Map),
+  ]; //역대 모든 노래들 불러오기.
+  if (mode == 0) {
+    artistsInfoPreLoad = List.from(artistsInfo);
+  }
+  if (mode == 1) {
+    preLoadCount += 1;
+  }
+
+  return artistsInfo;
 }
 
 List<dynamic> mostRecommendedSongsPreLoad = [];

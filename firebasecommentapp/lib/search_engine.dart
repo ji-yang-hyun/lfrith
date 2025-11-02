@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:dart_phonetics/dart_phonetics.dart';
-// import 'package:dotenv/dotenv.dart' as dotenv;
+import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:http/http.dart' as http;
 import 'package:korean_romanization_converter/korean_romanization_converter.dart';
@@ -129,8 +129,12 @@ List<String> module1(String title, String channel) {
   제목과 채널이름을 매개변수로 받아 키워드 리스트를 return 한다.
   */
 
+  print(title);
+  print(channel);
   title = smallAlphabetFetch(title);
   channel = smallAlphabetFetch(channel);
+  print(title);
+  print(channel);
 
   title = title.toLowerCase();
   channel = channel.toLowerCase();

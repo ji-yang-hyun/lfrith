@@ -29,6 +29,10 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
   String commentText = "";
   String description = "";
   int musicAddLen = 0;
+  String channelUrl = "";
+  int subscriber = 0;
+  String channelProfileUrl = "";
+  String musicUrl = "";
   //클립보드가 비었을 때 들어갈 url
   String nullUrl = "https://youtu.be/3R8WylnTONA?si=kHwD7_p6ZKqQEX5e";
 
@@ -56,32 +60,21 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
     // print(clipboardText);
   }
 
-  void getMusicMetadataFunc(String musicUrl) async {
+  void getMusicMetadataFunc(String url) async {
     validImage = true;
     var yt = YoutubeExplode();
-    var video = await yt.videos.get(musicUrl);
+    var video = await yt.videos.get(url);
     albumCoverImgUrl = video.thumbnails.maxResUrl;
     title = video.title;
     artist = video.author;
     views = video.engagement.viewCount;
     likes = video.engagement.likeCount ?? 0;
+    musicUrl = url;
+    channelUrl = "https://www.youtube.com/channel/${video.channelId}";
 
-    newSong = {
-      "albumcover": albumCoverImgUrl,
-      "artist": artist,
-      "comment_numbers": [],
-      "likes": likes,
-      "report_count": 0,
-      // "search_tag0": searchTag0,
-      // "search_tag1": searchTag1,
-      // "search_tag2": searchTag2,
-      "title": title,
-      "views": views,
-      "youtube_url": musicUrl,
-      "rating": rating,
-      "number": 0,
-      // "keywords": keywords,
-    };
+    var channel = await yt.channels.get(channelUrl);
+    channelProfileUrl = channel.logoUrl;
+    subscriber = channel.subscribersCount ?? 0;
 
     showSongState = true;
     setState(() {});
@@ -158,12 +151,24 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       setState(() {});
     });
 
-    List<String> keywords = module1(title, artist);
+    List<String> keywordsTitle = module1(title, "");
+    List<String> keywordsArtist = module1(artist, "");
+    List<String> keywords = keywordsTitle + keywordsArtist;
     musicAddLen = keywords.length;
-    List<List<String>> searchTag = await module2(keywords);
-    List<String> searchTag0 = searchTag[0];
-    List<String> searchTag1 = searchTag[1];
-    List<String> searchTag2 = searchTag[2];
+
+    List<List<String>> searchTagTitle = await module2(keywordsTitle);
+    List<String> searchTag0Title = searchTagTitle[0];
+    List<String> searchTag1Title = searchTagTitle[1];
+    List<String> searchTag2Title = searchTagTitle[2];
+
+    List<List<String>> searchTagArtist = await module2(keywordsArtist);
+    List<String> searchTag0Artist = searchTagArtist[0];
+    List<String> searchTag1Artist = searchTagArtist[1];
+    List<String> searchTag2Artist = searchTagArtist[2];
+
+    List<String> searchTag0 = searchTag0Title + searchTag0Artist;
+    List<String> searchTag1 = searchTag1Title + searchTag1Artist;
+    List<String> searchTag2 = searchTag2Title + searchTag2Artist;
 
     timer.cancel();
 
@@ -178,10 +183,11 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       "search_tag2": searchTag2,
       "title": title,
       "views": views,
-      "youtube_url": newSong["youtube_url"],
+      "youtube_url": musicUrl,
       "rating": rating,
       "number": 0,
       "keywords": keywords,
+      "channelUrl": channelUrl,
     };
 
     newSong["number"] = songCount + 1;
@@ -210,6 +216,43 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
         .set(newSong);
 
     await songsInfoPreLoadUpdate();
+    await artistsInfoPreLoadUpdate();
+
+    int artistDB = 0;
+    for (var artistM in artistsInfoPreLoad) {
+      if (artistM["name"] == artist) {
+        artistDB = artistM["number"];
+      }
+    }
+
+    if (artistDB == 0) {
+      Map<String, dynamic> newArtist = {
+        "number": artistsInfoPreLoad.length,
+        "channel_url": channelUrl,
+        "keywords": keywordsArtist,
+        "name": artist,
+        "profile_image": channelProfileUrl,
+        "search_tag0": searchTag0Artist,
+        "search_tag1": searchTag1Artist,
+        "search_tag2": searchTag2Artist,
+        "songs": [newSong["number"]],
+        "subscriber": subscriber,
+      };
+
+      FirebaseFirestore.instance
+          .collection('artists')
+          .doc('artist${newArtist["number"]}')
+          .set(newArtist);
+    } else {
+      Map<String, dynamic> artistInfo = artistsInfoPreLoad[artistDB];
+      artistInfo["songs"].add(newSong["number"]);
+      FirebaseFirestore.instance
+          .collection('artists')
+          .doc('artist${artistInfo["number"]}')
+          .set(artistInfo);
+    }
+
+    await artistsInfoPreLoadUpdate();
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
