@@ -3,6 +3,7 @@ import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/music_add_screen.dart';
 import 'package:firebasecommentapp/search_engine.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
+import 'package:firebasecommentapp/widgets/mini_artist_widget.dart';
 import 'package:firebasecommentapp/widgets/mini_music_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +18,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Map<String, dynamic>> songsInfo = [];
   TextEditingController strController = TextEditingController();
   List<int> songsToShow = [];
+  List<int> artistsToshow = [];
   ScrollController scrollcontroller = ScrollController();
 
   void getSongsInfo() async {
@@ -59,8 +61,14 @@ class _SearchScreenState extends State<SearchScreen> {
         return;
       }
 
-      List<int> orderByTitle = await searchEngine(keywordTitle);
-      List<int> orderByArtist = await searchEngine(keywordArtist);
+      List<int> orderByTitle = await searchEngine(
+        keywordTitle,
+        songsInfoPreLoad,
+      );
+      List<int> orderByArtist = await searchEngine(
+        keywordArtist,
+        songsInfoPreLoad,
+      );
 
       List<int> rankings = [
         for (int i = 0; i < songsInfoPreLoad.length; i++) i,
@@ -73,8 +81,16 @@ class _SearchScreenState extends State<SearchScreen> {
       songsToShow = rankings;
     } else {
       songsToShow = []; // 보여줄 노래 리스트 초기화
+      artistsToshow = [];
 
-      songsToShow = await searchEngine(keyword);
+      songsToShow = await searchEngine(keyword, songsInfoPreLoad);
+      List<int> artistSearch = [];
+      artistSearch = await searchEngine(keyword, artistsInfoPreLoad);
+      if (artistsInfoPreLoad[artistSearch[1]]["name"] ==
+          songsInfoPreLoad[songsToShow[1]]["artist"]) {
+        artistsToshow.add(artistSearch[1]);
+      }
+
       print(songsToShow);
     }
 
@@ -197,6 +213,13 @@ class _SearchScreenState extends State<SearchScreen> {
                 controller: scrollcontroller,
                 child: Column(
                   children: [
+                    for (int i in artistsToshow)
+                      MiniArtistWidget(
+                        artistInfo: artistsInfoPreLoad[i],
+                        artistNumber: artistsInfoPreLoad[i]["number"],
+                        screenNumber: 3,
+                      ),
+
                     for (int i in songsToShow)
                       MiniMusicWidget(
                         musicInfo: songsInfo[i],

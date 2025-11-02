@@ -187,7 +187,6 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       "rating": rating,
       "number": 0,
       "keywords": keywords,
-      "channelUrl": channelUrl,
     };
 
     newSong["number"] = songCount + 1;
@@ -202,7 +201,6 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
       addedData.data() as Map,
     );
 
-    addedInfo["lately_added"].removeAt(0);
     addedInfo["lately_added"].add(songCount + 1);
 
     FirebaseFirestore.instance

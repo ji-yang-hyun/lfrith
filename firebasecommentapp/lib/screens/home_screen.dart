@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/widgets/bottom_navigation_bar.dart';
+import 'package:firebasecommentapp/widgets/ordered_artists_widget.dart';
 import 'package:firebasecommentapp/widgets/ordered_songs_top_widget.dart';
 import 'package:firebasecommentapp/widgets/ordered_songs_widget.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> mostCommentedSongs = [];
   List<dynamic> mostRecommendedSongs = [];
   List<dynamic> mostLikedSongs = [];
-  List<dynamic> interestedArtistsSongs = [];
+  List<dynamic> interestedArtists = [];
   List<dynamic> logRecommandSongs = [];
 
   bool isLoad = false;
@@ -65,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     getLatelyOrders();
     getInfoByOrders();
-    getInterestedArtistOrders();
     getLogByOrders();
     setState(() {});
   }
@@ -86,52 +86,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return artistsSongs;
-  }
-
-  void getInterestedArtistOrders() {
-    // var userData =
-    //     await FirebaseFirestore.instance
-    //         .collection('users')
-    //         .doc('user$loginUserNumber')
-    //         .get();
-    Map<String, dynamic> userInfo = usersInfoPreLoad[loginUserNumber];
-    List<dynamic> commentedSongs = userInfo["commented_songs"];
-    List<dynamic> commentedArtist = [];
-
-    // if (commentedArtist.length * commentedSongs.length == 0) {
-    //   return;
-    // }
-
-    for (int songNumber in commentedSongs) {
-      commentedArtist.add(songsInfo[songNumber]["artist"]);
-    }
-
-    //댓글을 단 노래의 아티스트를 많이 나온 순서대로 정렬.
-    commentedArtist.sort(
-      (a, b) => commentedArtist
-          .where((element) {
-            return b == element;
-          })
-          .length
-          .compareTo(
-            commentedArtist.where((element) {
-              return a == element;
-            }).length,
-          ),
-    );
-
-    //중복제거
-    commentedArtist = commentedArtist.toSet().toList();
-
-    for (String artist in commentedArtist) {
-      interestedArtistsSongs =
-          [
-            interestedArtistsSongs,
-            searchFunc(artist),
-          ].expand((x) => x).toList();
-    }
-
-    setState(() {});
   }
 
   void getLatelyOrders() async {
@@ -189,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
       for (var m in songsInfoCopy) m["number"],
     ]);
 
-    songsInfoPreLoad = songsInfo;
+    // songsInfoPreLoad = songsInfo;  무슨 코드인지 모르겠는데 쓸모없어보여서 주석처리했다.
     mostRecommendedSongsPreLoad = mostRecommendedSongs;
 
     isLoad = true;
@@ -246,6 +200,16 @@ class _HomeScreenState extends State<HomeScreen> {
     // 관심있는 채널 순위를 얻었으니 그걸로 이따가 채널 추천? 도 넣어주자
 
     logRecommandSongs = songsSorted;
+
+    List<Map<String, dynamic>> artistsInfoCopy = List.from(artistsInfoPreLoad);
+    artistsInfoCopy.sort(
+      (a, b) => (artistPoints[b["name"]] ?? -1).compareTo(
+        (artistPoints[a["name"]] ?? -1),
+      ),
+    );
+
+    interestedArtists = [for (var artist in artistsInfoCopy) artist["number"]];
+    interestedArtists.remove(0);
   }
 
   @override
@@ -277,58 +241,58 @@ class _HomeScreenState extends State<HomeScreen> {
               OrderedSongsTopWidget(
                 orderByText: "추천순 Top 3",
                 songsList: mostRecommendedSongs,
-                songsInfo: songsInfo,
-              ),
-
-              OrderedSongsWidget(
-                orderByText: "좋아하는 아티스트",
-                songsList: interestedArtistsSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
                 orderByText: "기록기반 추천",
                 songsList: logRecommandSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
+              ),
+
+              OrderedArtistsWidget(
+                orderByText: "관심있는 아티스트",
+                artistsList: interestedArtists,
+                artistsInfo: artistsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
                 orderByText: "추천순",
                 songsList: mostRecommendedSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
                 orderByText: "최다 조회수",
                 songsList: mostViewedSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
                 orderByText: "최고 평점",
                 songsList: mostRatedSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
               OrderedSongsWidget(
                 orderByText: "최근 추가됨",
                 songsList: latelyAddedSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
               OrderedSongsWidget(
                 orderByText: "최근 댓글 달림",
                 songsList: latelyCommentedSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
                 orderByText: "최다 댓글",
                 songsList: mostCommentedSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
               OrderedSongsWidget(
                 orderByText: "최다 좋아요",
                 songsList: mostLikedSongs,
-                songsInfo: songsInfo,
+                songsInfo: songsInfoPreLoad,
               ),
             ],
           ),

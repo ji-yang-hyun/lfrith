@@ -564,7 +564,10 @@ int customCompareTo(
   }
 }
 
-Future<List<Map<String, dynamic>>> searchModule(String input) async {
+Future<List<Map<String, dynamic>>> searchModule(
+  String input,
+  List<Map<String, dynamic>> collection,
+) async {
   double w = 1; //번역과 더블 메타폰 사이의 가중치
   if (input.isEmpty) {
     return [];
@@ -581,7 +584,7 @@ Future<List<Map<String, dynamic>>> searchModule(String input) async {
     inputTransList.add(await inputToTrans(input));
   }
 
-  List<Map<String, dynamic>> songs = songsInfoPreLoad;
+  List<Map<String, dynamic>> songs = collection;
   List<double> songsDMPPoints = [];
   List<double> songsPoints = [];
   List<String> transOrDMP = [];
@@ -641,8 +644,14 @@ Future<List<Map<String, dynamic>>> searchModule(String input) async {
   return songsSorted;
 }
 
-Future<List<int>> searchEngine(String input) async {
-  List<Map<String, dynamic>> searchResult = await searchModule(input);
+Future<List<int>> searchEngine(
+  String input,
+  List<Map<String, dynamic>> collection,
+) async {
+  List<Map<String, dynamic>> searchResult = await searchModule(
+    input,
+    collection,
+  );
   List<int> result = [for (var song in searchResult) song["number"]];
   return result;
 }

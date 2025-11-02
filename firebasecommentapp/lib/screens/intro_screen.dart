@@ -17,6 +17,8 @@ class _IntroScreenState extends State<IntroScreen> {
   bool loadingFin = false;
   bool timerFin = false;
   int loginUserNumberPref = 0;
+  bool loadInfoFin = false;
+  List<dynamic> images = [];
 
   void getLoginInfo() async {
     // await getNurak();
@@ -25,6 +27,21 @@ class _IntroScreenState extends State<IntroScreen> {
     // 하나 기다리는 시간이면 다른애들도 다 끝날거다. comment가 제일 많을거니까 ㅇㅇ
     // 아니였음 그래서 다 달아줌 ㅎㅎ...
     await usersInfoPreLoadUpdate();
+    await artistsInfoPreLoadUpdate();
+    //그리고 여기서 가장 중요한 건 사진들을 전부 캐싱해야 부드럽게 움직이기 때문에 여기서 사진들을 다
+    // 한 번씩 불러오는것이 좋다.
+    images =
+        [for (var songInfo in songsInfoPreLoad) songInfo["albumcover"]] +
+        [
+          for (var artistInfo in artistsInfoPreLoad)
+            artistInfo["profile_image"],
+        ];
+
+    images.removeAt(songsInfoPreLoad.length);
+    images.removeAt(0);
+
+    loadInfoFin = true;
+    setState(() {});
 
     final prefs = await SharedPreferences.getInstance();
 
@@ -115,10 +132,25 @@ class _IntroScreenState extends State<IntroScreen> {
         opacity: visible ? 1.0 : 0.0,
         duration: Duration(milliseconds: 700),
         child: Center(
-          child: SizedBox(
-            height: 115,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 115,
 
-            child: Image.asset("assets/images/logo.jpg", fit: BoxFit.fitHeight),
+                child: Image.asset(
+                  "assets/images/logo.jpg",
+                  fit: BoxFit.fitHeight,
+                ),
+              ),
+              if (loadInfoFin)
+                Column(
+                  children: [
+                    for (var url in images)
+                      Image.network(url, height: 0, width: 0),
+                  ],
+                ),
+            ],
           ),
         ),
       ),
