@@ -250,7 +250,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
                 : Colors.transparent,
       ),
       extendBodyBehindAppBar: true,
-      bottomNavigationBar: myBottomNavigationBar(currentWidgetName: "SONG"),
+      bottomNavigationBar: Hero(
+        tag: "bar",
+        child: myBottomNavigationBar(currentWidgetName: "SONG"),
+      ),
       body: SingleChildScrollView(
         physics: ClampingScrollPhysics(),
         controller: controller,

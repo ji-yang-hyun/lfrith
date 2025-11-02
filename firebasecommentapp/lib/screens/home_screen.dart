@@ -200,10 +200,15 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    //이제 songsInfo를 관심있는 채널 순으로 정렬했으니, 여기서 한 3곡 정도씩 뽑자.
-    // 관심있는 채널 순위를 얻었으니 그걸로 이따가 채널 추천? 도 넣어주자
-
-    logRecommandSongs = songsSorted;
+    bool check = false;
+    for (int num in songsSorted) {
+      if (songsInfoPreLoad[num]["report_count"] < 10) {
+        check = true;
+      }
+    }
+    if (check) {
+      logRecommandSongs = songsSorted;
+    }
 
     List<Map<String, dynamic>> artistsInfoCopy = List.from(artistsInfoPreLoad);
     artistsInfoCopy.sort(

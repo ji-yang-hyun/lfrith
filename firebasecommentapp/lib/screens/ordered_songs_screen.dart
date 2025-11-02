@@ -16,7 +16,10 @@ class OrderedSongsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: myBottomNavigationBar(currentWidgetName: "HOME"),
+      bottomNavigationBar: Hero(
+        tag: "bar",
+        child: myBottomNavigationBar(currentWidgetName: "HOME"),
+      ),
 
       appBar: AppBar(
         title: Text(
