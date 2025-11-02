@@ -22,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> mostRecommendedSongs = [];
   List<dynamic> mostLikedSongs = [];
   List<dynamic> interestedArtistsSongs = [];
+  List<dynamic> logRecommandSongs = [];
+
   bool isLoad = false;
 
   void updatePreLoad() async {
@@ -61,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     getLatelyOrders();
     getInfoByOrders();
     getInterestedArtistOrders();
+    getLogByOrders();
     setState(() {});
   }
 
@@ -191,6 +194,57 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 
+  void getLogByOrders() {
+    Map<String, int> artistPoints = {};
+
+    for (int num in usersInfoPreLoad[loginUserNumber]["commented_songs"]) {
+      artistPoints[songsInfoPreLoad[num]["artist"]] =
+          (artistPoints[songsInfoPreLoad[num]["artist"]] ?? 0) + 5;
+    }
+    for (int num in usersInfoPreLoad[loginUserNumber]["user_visit_log"]) {
+      artistPoints[songsInfoPreLoad[num]["artist"]] =
+          (artistPoints[songsInfoPreLoad[num]["artist"]] ?? 0) + 1;
+    }
+
+    List<String> artists = artistPoints.keys.toList();
+    artists.sort((a, b) => artistPoints[b]!.compareTo(artistPoints[a]!));
+
+    List<int> songsSorted = [];
+    List<Map<String, dynamic>> songsInfoCopy = List.from(songsInfoPreLoad);
+    songsInfoCopy.sort(
+      (a, b) => (artistPoints[b["artist"]] ?? -1).compareTo(
+        (artistPoints[a["artist"]] ?? -1),
+      ),
+    );
+
+    int cnt = 0;
+    for (int i = 0; i < songsInfoCopy.length; i++) {
+      if (i != 0) {
+        if (songsInfoCopy[i - 1]["artist"] != songsInfoCopy[i]["artist"]) {
+          cnt = 0;
+        }
+      }
+
+      if (cnt < 3) {
+        // print(usersInfoPreLoad[loginUserNumber]);
+        if (!usersInfoPreLoad[loginUserNumber]["commented_songs"].contains(
+              songsInfoCopy[i]["number"],
+            ) &&
+            !usersInfoPreLoad[loginUserNumber]["user_visit_log"].contains(
+              songsInfoCopy[i]["number"],
+            )) {
+          cnt += 1;
+          songsSorted.add(songsInfoCopy[i]["number"]);
+        }
+      }
+    }
+
+    //이제 songsInfo를 관심있는 채널 순으로 정렬했으니, 여기서 한 3곡 정도씩 뽑자.
+    // 관심있는 채널 순위를 얻었으니 그걸로 이따가 채널 추천? 도 넣어주자
+
+    logRecommandSongs = songsSorted;
+  }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -226,6 +280,12 @@ class _HomeScreenState extends State<HomeScreen> {
               OrderedSongsWidget(
                 orderByText: "좋아하는 아티스트",
                 songsList: interestedArtistsSongs,
+                songsInfo: songsInfo,
+              ),
+
+              OrderedSongsWidget(
+                orderByText: "기록기반 추천",
+                songsList: logRecommandSongs,
                 songsInfo: songsInfo,
               ),
 

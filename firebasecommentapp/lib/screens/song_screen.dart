@@ -36,6 +36,22 @@ class _SongScreenState extends State<SongScreen> {
   bool loadMyComment = false;
   int buildCount = 0;
 
+  void logFunc() async {
+    usersInfoPreLoad[loginUserNumber]["user_visit_log"].add(widget.songNumber);
+
+    var userData =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc("user$loginUserNumber")
+            .get();
+    var userInfo = Map<String, dynamic>.from(userData.data() as Map);
+    userInfo["user_visit_log"].add(widget.songNumber);
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc('user$loginUserNumber')
+        .set(userInfo);
+  }
+
   Future<void> likeFunc() async {
     print("like request start");
     var commentsDataDB =
@@ -384,6 +400,7 @@ class _SongScreenState extends State<SongScreen> {
     latestSongNumber = widget.songNumber;
     getcomments();
     setState(() {});
+    logFunc();
     super.initState();
   }
 
