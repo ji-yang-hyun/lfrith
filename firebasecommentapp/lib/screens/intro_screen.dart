@@ -53,7 +53,7 @@ class _IntroScreenState extends State<IntroScreen> {
       return;
     }
 
-    if (loginUserNumberPref == -1) {
+    if (loginUserNumberPref == -2) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder:

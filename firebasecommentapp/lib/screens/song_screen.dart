@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:firebasecommentapp/screens/artist_screen.dart';
 import 'package:firebasecommentapp/screens/home_screen.dart';
+import 'package:firebasecommentapp/screens/login_screen.dart';
 import 'package:firebasecommentapp/screens/search_screen.dart';
 import 'package:firebasecommentapp/screens/user_screen.dart';
 import 'package:firebasecommentapp/widgets/comment_widget_new.dart';
@@ -37,7 +38,39 @@ class _SongScreenState extends State<SongScreen> {
   bool loadMyComment = false;
   int buildCount = 0;
 
+  void gotoLogin() {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        transitionsBuilder:
+        // secondaryAnimation: 화면 전화시 사용되는 보조 애니메이션효과
+        // child: 화면이 전환되는 동안 표시할 위젯을 의미(즉, 전환 이후 표시될 위젯 정보를 의미)
+        (context, animation, secondaryAnimation, child) {
+          // Offset에서 x값 1은 오른쪽 끝 y값 1은 아래쪽 끝을 의미한다.
+          // 애니메이션이 시작할 포인트 위치를 의미한다.
+
+          var begin = Offset(0, 1);
+          var end = const Offset(0, 0);
+          // Curves.ease: 애니메이션이 부드럽게 동작하도록 명령
+          var curve = Curves.ease;
+          // 애니메이션의 시작과 끝을 담당한다.
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
+      ),
+    );
+  }
+
   void logFunc() async {
+    if (loginUserNumber == -1) {
+      return;
+    }
     usersInfoPreLoad[loginUserNumber]["user_visit_log"].add(widget.songNumber);
 
     var userData =
@@ -54,6 +87,11 @@ class _SongScreenState extends State<SongScreen> {
   }
 
   Future<void> likeFunc() async {
+    if (loginUserNumber == -1) {
+      gotoLogin();
+      return;
+    }
+
     print("like request start");
     var commentsDataDB =
         await FirebaseFirestore.instance
@@ -297,6 +335,11 @@ class _SongScreenState extends State<SongScreen> {
 
   //////////////////////////////
   void addComment() {
+    if (loginUserNumber == -1) {
+      gotoLogin();
+      return;
+    }
+
     int commentRatingCopy = commentRating;
     String commentText = commentController.text;
 
@@ -326,6 +369,9 @@ class _SongScreenState extends State<SongScreen> {
     // 내가 쓴 댓글을 모아서 맨 위에서 볼 수 있게!
     //addcomments에서 따로 추가해주니까 여기서는 굳이 초기화필요성 x
     List<int> myComments = [];
+    if (loginUserNumber == -1) {
+      return myComments;
+    }
     for (int i in songInfo["comment_numbers"]) {
       int commentUserNumber = commentsInfoPreLoad[i]["user_number"];
       if (commentUserNumber == loginUserNumber) {
@@ -503,6 +549,37 @@ class _SongScreenState extends State<SongScreen> {
                 ),
                 IconButton(
                   onPressed: () {
+                    if (loginUserNumber == -1) {
+                      Navigator.of(context).pushReplacement(
+                        PageRouteBuilder(
+                          transitionsBuilder:
+                          // secondaryAnimation: 화면 전화시 사용되는 보조 애니메이션효과
+                          // child: 화면이 전환되는 동안 표시할 위젯을 의미(즉, 전환 이후 표시될 위젯 정보를 의미)
+                          (context, animation, secondaryAnimation, child) {
+                            // Offset에서 x값 1은 오른쪽 끝 y값 1은 아래쪽 끝을 의미한다.
+                            // 애니메이션이 시작할 포인트 위치를 의미한다.
+
+                            var begin = Offset(0, 1);
+                            var end = const Offset(0, 0);
+                            // Curves.ease: 애니메이션이 부드럽게 동작하도록 명령
+                            var curve = Curves.ease;
+                            // 애니메이션의 시작과 끝을 담당한다.
+                            var tween = Tween(
+                              begin: begin,
+                              end: end,
+                            ).chain(CurveTween(curve: curve));
+                            return SlideTransition(
+                              position: animation.drive(tween),
+                              child: child,
+                            );
+                          },
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  LoginScreen(),
+                        ),
+                      );
+                      return;
+                    }
                     Navigator.of(context).pushReplacement(
                       PageRouteBuilder(
                         transitionsBuilder:
@@ -765,7 +842,10 @@ class _SongScreenState extends State<SongScreen> {
                                   userInfo:
                                       usersInfoPreLoad[commentsInfoPreLoad[commentNumber]["user_number"]],
                                   parentSetStateFunc: setStateForChild,
-                                  myUserInfo: usersInfoPreLoad[loginUserNumber],
+                                  myUserInfo:
+                                      (loginUserNumber != -1)
+                                          ? usersInfoPreLoad[loginUserNumber]
+                                          : {"number": -1},
                                 ),
                               ),
                           ],

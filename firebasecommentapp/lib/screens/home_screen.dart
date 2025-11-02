@@ -152,6 +152,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void getLogByOrders() {
+    if (loginUserNumber == -1) {
+      return;
+    }
+
     Map<String, int> artistPoints = {};
 
     for (int num in usersInfoPreLoad[loginUserNumber]["commented_songs"]) {
