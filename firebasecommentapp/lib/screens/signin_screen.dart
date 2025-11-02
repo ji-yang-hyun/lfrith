@@ -1,4 +1,5 @@
 import 'package:firebasecommentapp/global_vars.dart';
+import 'package:firebasecommentapp/screens/home_screen.dart';
 import 'package:firebasecommentapp/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,7 +17,8 @@ class _SignInScreenState extends State<SignInScreen> {
   TextEditingController nameController = TextEditingController();
   String commentText = "";
 
-  void done() {
+  void done(int userNum) {
+    loginUserNumber = userNum;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionsBuilder:
@@ -26,7 +28,7 @@ class _SignInScreenState extends State<SignInScreen> {
           // Offset에서 x값 1은 오른쪽 끝 y값 1은 아래쪽 끝을 의미한다.
           // 애니메이션이 시작할 포인트 위치를 의미한다.
 
-          var begin = Offset(-1, 0);
+          var begin = Offset(0, 1);
           var end = const Offset(0, 0);
           // Curves.ease: 애니메이션이 부드럽게 동작하도록 명령
           var curve = Curves.ease;
@@ -40,7 +42,7 @@ class _SignInScreenState extends State<SignInScreen> {
             child: child,
           );
         },
-        pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) => HomeScreen(),
       ),
     );
   }
@@ -59,6 +61,7 @@ class _SignInScreenState extends State<SignInScreen> {
       "number": 0,
       "commented_songs": [],
       "liked_comment": [],
+      "user_visit_log": [],
     };
 
     var userCount = usersInfoPreLoad.length - 1;
@@ -87,7 +90,7 @@ class _SignInScreenState extends State<SignInScreen> {
           .set(userData);
 
       await usersInfoPreLoadUpdate(); // 여기서 users에 새로운 유저 추가하고 다시 preLoad
-      done();
+      done(userCount + 1);
     } else {
       if (!validNewID) {
         commentText = "사용된 ID입니다";

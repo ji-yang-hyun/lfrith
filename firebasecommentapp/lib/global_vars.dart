@@ -2,6 +2,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 
+List<dynamic> recommandWeek = [];
+
+Future<List<dynamic>> getRecommandWeek() async {
+  var homeData =
+      await FirebaseFirestore.instance
+          .collection('home')
+          .doc("home_screen_data")
+          .get();
+  recommandWeek =
+      Map<String, dynamic>.from(homeData.data() as Map)["recommand"]!;
+
+  print(recommandWeek);
+  return recommandWeek;
+}
+
 int musicAddLoading = 0;
 
 int loginUserNumber = 1;

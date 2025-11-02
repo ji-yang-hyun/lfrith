@@ -28,6 +28,7 @@ class _IntroScreenState extends State<IntroScreen> {
     // 아니였음 그래서 다 달아줌 ㅎㅎ...
     await usersInfoPreLoadUpdate();
     await artistsInfoPreLoadUpdate();
+    await getRecommandWeek();
     //그리고 여기서 가장 중요한 건 사진들을 전부 캐싱해야 부드럽게 움직이기 때문에 여기서 사진들을 다
     // 한 번씩 불러오는것이 좋다.
     images =

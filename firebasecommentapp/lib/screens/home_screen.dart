@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> mostViewedSongs = [];
   List<dynamic> mostRatedSongs = [];
   List<dynamic> mostCommentedSongs = [];
-  List<dynamic> mostRecommendedSongs = [];
   List<dynamic> mostLikedSongs = [];
   List<dynamic> interestedArtists = [];
   List<dynamic> logRecommandSongs = [];
@@ -122,30 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
     songsInfoCopy.sort((a, b) => b["likes"].compareTo(a["likes"]));
     mostLikedSongs = List.from([for (var m in songsInfoCopy) m["number"]]);
 
-    songsInfoCopy.sort(
-      (a, b) => recommendPointFunc(
-        b["views"],
-        b["comment_numbers"].length,
-        b["likes"],
-        b["rating"].toDouble(),
-        b["report_count"],
-      ).compareTo(
-        recommendPointFunc(
-          a["views"],
-          a["comment_numbers"].length,
-          a["likes"],
-          a["rating"].toDouble(),
-          a["report_count"],
-        ),
-      ),
-    );
-    mostRecommendedSongs = List.from([
-      for (var m in songsInfoCopy) m["number"],
-    ]);
-
-    // songsInfoPreLoad = songsInfo;  무슨 코드인지 모르겠는데 쓸모없어보여서 주석처리했다.
-    mostRecommendedSongsPreLoad = mostRecommendedSongs;
-
     isLoad = true;
 
     setState(() {});
@@ -157,6 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     Map<String, int> artistPoints = {};
+
+    if (usersInfoPreLoad[loginUserNumber]["user_visit_log"].length == 0) {
+      return;
+    }
 
     for (int num in usersInfoPreLoad[loginUserNumber]["commented_songs"]) {
       artistPoints[songsInfoPreLoad[num]["artist"]] =
@@ -248,13 +227,13 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               OrderedSongsTopWidget(
-                orderByText: "추천순 Top 3",
-                songsList: mostRecommendedSongs,
+                orderByText: "  이번 주 추천 Top 3",
+                songsList: recommandWeek,
                 songsInfo: songsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
-                orderByText: "기록기반 추천",
+                orderByText: "활동 기반 추천",
                 songsList: logRecommandSongs,
                 songsInfo: songsInfoPreLoad,
               ),
@@ -263,12 +242,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 orderByText: "관심있는 아티스트",
                 artistsList: interestedArtists,
                 artistsInfo: artistsInfoPreLoad,
-              ),
-
-              OrderedSongsWidget(
-                orderByText: "추천순",
-                songsList: mostRecommendedSongs,
-                songsInfo: songsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
@@ -288,13 +261,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 songsInfo: songsInfoPreLoad,
               ),
               OrderedSongsWidget(
-                orderByText: "최근 댓글 달림",
+                orderByText: "최근 댓글 추가됨",
                 songsList: latelyCommentedSongs,
                 songsInfo: songsInfoPreLoad,
               ),
 
               OrderedSongsWidget(
-                orderByText: "최다 댓글",
+                orderByText: "최다 댓글수",
                 songsList: mostCommentedSongs,
                 songsInfo: songsInfoPreLoad,
               ),
