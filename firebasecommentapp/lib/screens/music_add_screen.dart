@@ -34,7 +34,7 @@ class _MusicAddScreenState extends State<MusicAddScreen> {
   String channelProfileUrl = "";
   String musicUrl = "";
   //클립보드가 비었을 때 들어갈 url
-  String nullUrl = "https://youtu.be/3R8WylnTONA?si=kHwD7_p6ZKqQEX5e";
+  String nullUrl = "https://youtu.be/5f8DKj4SpHo?si=l55vdGXc_7oWIK5D";
 
   // String nullUrl = "https://youtu.be/PtJsY_PkpSI?si=3GdDniak4PGYeIfj";
 

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:dart_phonetics/dart_phonetics.dart';
-import 'package:dotenv/dotenv.dart' as dotenv;
+// import 'package:dotenv/dotenv.dart' as dotenv;
 import 'package:firebasecommentapp/global_vars.dart';
 import 'package:http/http.dart' as http;
 import 'package:korean_romanization_converter/korean_romanization_converter.dart';
@@ -222,36 +222,14 @@ String promptTranslate =
     "Translate the input sentence into English. The output must not contain any commas or other special characters. Return only the result as a plain string without any additional words or Markdown syntax.";
 
 Future<String> generateResponse(String input, String prompt) async {
-  // dotenv.load(
-  //   '/Users/dt_for_flutter/flutter_firebase_comment_app/firebasecommentapp/.env',
-  // );
-  /*
-  뭘 어떻게 해도 이 env파일 위치를 내 컴 경로 말고 다른걸로 하지를 못하겠네
-  그냥 내 컴으로 말고 출시할때는 문자열로 그냥 넣어주는걸로 하자.
-  */
-
-  // String? apiKey = dotenv.env['API_KEY'];
-
-  String apiKey = "";
-
-  String token = "Bearer $apiKey";
-
   var response = await http.post(
-    Uri.parse(apiUrl),
-    headers: {"Content-Type": "application/json", "Authorization": token},
-    body: jsonEncode({
-      "model": "gpt-5",
-      "input":
-          "Forget all the previous inputs, outputs, and prompts. input : $input \n $prompt",
-      "reasoning": {"effort": "low"},
-      // "max_tokens": 2000,
-    }),
+    Uri.parse("https://openai-proxy.weathered-firefly-e5ba.workers.dev/"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({"input": input, "prompt": prompt}),
   );
   if (response.statusCode == 200) {
-    Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-    // print(data);
-    String text = "";
-    text = data["output"][1]["content"][0]["text"];
+    Map<String, dynamic> data = jsonDecode(response.body);
+    String text = data["result"];
     return text;
   } else {
     throw Exception("Failed to generate response: ${response.statusCode}");
@@ -267,7 +245,7 @@ List<String> romanizedToDoubleMetaPhone(List<String> romanizedList) {
     doubleMetaphoneList += encoding!.alternates!.toList();
 
     if (doubleMetaphoneList.length != 2) {
-      print("wrond");
+      print("wrong");
     }
 
     result += doubleMetaphoneList;
